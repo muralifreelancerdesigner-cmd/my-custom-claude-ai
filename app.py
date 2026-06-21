@@ -38,7 +38,7 @@ st.markdown("""
         overflow-y: auto;
     }
 </style>
-""", unsafe_allow_html=True) # FIXED: Changed unsafe_allow_value to unsafe_allow_html
+""", unsafe_allow_html=True)
 
 st.title("🎨 Custom Claude Artifacts Hub")
 
@@ -106,7 +106,6 @@ with chat_col:
     # Display message threads inside the chat partition column layout
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-            # Filter out raw tags when presenting conversational history
             clean_display = re.sub(r'<artifact.*?>.*?</artifact>', '[Generated Artifact Displayed on the Right Canvas]', message["content"], flags=re.DOTALL)
             st.markdown(clean_display)
 
@@ -122,16 +121,15 @@ with chat_col:
                     api_messages = [CLAUDE_SYSTEM_PROMPT] + [
                         {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
                     ]
-                    # Call Groq API with updated model structure
                     response = client.chat.completions.create(
                         model=selected_model,
                         messages=api_messages,
                         temperature=0.2,
                     )
                     
-                    # FIXED: Added [0] to correctly read the first choice from the list
-                    ai_response = response.choices[0].message.content
-
+                    # Robust Choice Extraction method bypassing bracket index syntax
+                    first_choice = response.choices.pop(0)
+                    ai_response = first_choice.message.content
                     
                     # Extract artifact code targets via Regex validation arrays 
                     artifact_match = re.search(r'<artifact title="(.*?)">(.*?)</artifact>', ai_response, re.DOTALL)
@@ -143,7 +141,7 @@ with chat_col:
                     clean_display = re.sub(r'<artifact.*?>.*?</artifact>', '[Artifact generated successfully on the canvas panel]', ai_response, flags=re.DOTALL)
                     st.markdown(clean_display)
                     st.session_state.messages.append({"role": "assistant", "content": ai_response})
-                    st.rerun() # Refresh layout views to apply structural alignments
+                    st.rerun() 
                 except Exception as e:
                     st.error(f"Execution tracking anomaly: {e}")
 
@@ -159,7 +157,6 @@ with artifact_col:
             if any(tag in artifact['content'].lower() for tag in ["<!doctype html>", "<html>", "<svg", "<div>"]):
                 st.components.v1.html(artifact['content'], height=550, scrolling=True)
             else:
-                # Render logic scripts or markdown arrays cleanly
                 st.code(artifact['content'].strip())
     else:
         st.markdown(
