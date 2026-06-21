@@ -2,11 +2,11 @@ import streamlit as st
 from groq import Groq
 from pypdf import PdfReader
 
-# 1. Page Configuration (Looks like Claude)
+# 1. Page Configuration
 st.set_page_config(page_title="Claude Pro AI with Docs", page_icon="🤖", layout="centered")
 st.title("🤖 My Custom Claude AI (Pro + Files)")
 
-# 2. Secure API Key Setup (Safe for Cloud & GitHub)
+# 2. Secure API Key Setup
 GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 client = Groq(api_key=GROQ_API_KEY)
 
@@ -14,7 +14,7 @@ client = Groq(api_key=GROQ_API_KEY)
 with st.sidebar:
     st.header("⚙️ Configuration")
     
-    # Model Selection Dropdown
+    # Updated to active Groq 2026 Model IDs
     selected_model = st.selectbox(
         "Choose AI Model:",
         ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
@@ -56,10 +56,8 @@ if uploaded_file is not None:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Create a system prompt that updates if a document is present
 base_instruction = "You are Claude, a helpful, honest, and harmless AI assistant developed by Anthropic. Provide detailed answers."
 if file_context:
-    # Inject file context directly into the AI's core instructions
     system_content = f"{base_instruction}\n\nThe user has uploaded a document. Use this document context to answer questions accurately:\n\n=== DOCUMENT CONTENT ===\n{file_context}\n======================="
 else:
     system_content = base_instruction
@@ -87,11 +85,11 @@ if user_input := st.chat_input("Ask me anything about your file..."):
                     {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
                 ]
                 
-                # Call Groq API
+                # Call Groq API with updated model structure
                 response = client.chat.completions.create(
                     model=selected_model,
                     messages=api_messages,
-                    temperature=0.3, 
+                    temperature=0.3,
                 )
                 
                 ai_response = response.choices[0].message.content
