@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Anthropic Design System Token CSS Inject Framework
+# Anthropic Design System Token CSS Inject Framework with Shimmer Animation
 st.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] {
@@ -45,20 +45,36 @@ st.markdown("""
         height: 70vh;
         overflow-y: auto;
     }
-    .chat-container-scroll {
-        height: 62vh;
-        overflow-y: auto;
-        padding-right: 10px;
+    
+    /* ✨ CLAUDE PREMIUM SHIMMER EFFECT CSS WORKFLOW */
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
     }
-    .login-wrapper {
-        background-color: #ffffff;
-        padding: 45px;
-        border-radius: 16px;
+    .claude-shimmer-container {
+        background: #ffffff;
         border: 1px solid #e5e0d8;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-        max-width: 420px;
-        margin: 80px auto;
-        text-align: center;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 10px 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+    }
+    .shimmer-line {
+        height: 14px;
+        margin-bottom: 12px;
+        background: linear-gradient(90deg, #f3f0e9 25%, #e5e0d8 50%, #f3f0e9 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite linear;
+        border-radius: 4px;
+    }
+    .shimmer-text {
+        color: #cc6543;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 15px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -75,7 +91,7 @@ if "current_artifact" not in st.session_state:
 
 # --- 🔒 CLAUDE SECURITY CREDENTIALS CONTROLLER ---
 if not st.session_state.authenticated:
-    st.markdown("<div class='login-wrapper'>", unsafe_allow_html=True)
+    st.markdown("<div class='login-wrapper' style='background-color:#ffffff; padding:45px; border-radius:16px; border:1px solid #e5e0d8; box-shadow:0 10px 30px rgba(0,0,0,0.04); max-width:420px; margin:80px auto; text-align:center;'>", unsafe_allow_html=True)
     st.image("https://icons8.com")
     st.subheader("Welcome back to Claude")
     st.caption("Enter credentials to open your secure environment.")
@@ -101,7 +117,6 @@ with st.sidebar:
     st.title("🤖 Claude Pro")
     st.caption("Logged in as Secure Admin Profile")
     
-    # 💾 CHAT HISTORY LOG MANAGEMENT
     st.markdown("---")
     st.subheader("📂 Chat Logs History")
     
@@ -189,17 +204,14 @@ active_history_logs = st.session_state.chat_store[st.session_state.active_thread
 # --- 🔲 DOUBLE COLUMN SPLIT SCREEN DESIGN PATTERN ---
 chat_column, canvas_column = st.columns([1.1, 0.9])
 
-# A. Render Messages in the Chat Column Block
 with chat_column:
     st.subheader("💬 Chat Threads Console")
-    # Wrap in a clean custom container block to separate from input field below
     with st.container():
         for msg in active_history_logs:
             with st.chat_message(msg["role"]):
                 display_text = re.sub(r'<artifact.*?>.*?</artifact>', '`[Premium Artifact Canvas Component Rendered on the Right Panel]`', msg["content"], flags=re.DOTALL)
                 st.markdown(display_text)
 
-# B. Render Premium Visual Assets Canvas Panel
 with canvas_column:
     st.subheader("📦 Premium Claude Canvas")
     if st.session_state.current_artifact:
@@ -209,7 +221,6 @@ with canvas_column:
         with st.container(border=True):
             raw_content_lower = component_data['content'].lower()
             
-            # Smart Extrapolation format parsing loops
             if any(marker in raw_content_lower for marker in ["<!doctype html>", "<html>", "<svg", "<div>"]):
                 file_ext, mime_type, label_text, is_html = "html", "text/html", "📥 Download Web Component (.html)", True
             elif any(marker in raw_content_lower for marker in ["import ", "def ", "print(", "streamlit"]):
@@ -223,7 +234,6 @@ with canvas_column:
             else:
                 file_ext, mime_type, label_text, is_html = "txt", "text/plain", "📥 Download Document / Data Sheet (.txt)", False
             
-            # FIXED: Corrected dictionary square brackets from component_data('title') to component_data['title']
             st.download_button(
                 label=label_text,
                 data=component_data['content'],
@@ -246,9 +256,20 @@ with canvas_column:
         )
 
 # --- 📥 FIXED ROOT LEVEL CHAT INPUT HANDLER ---
-# FIXED: Re-aligned the chat input loops at page root block level securely with full regex parsing rules
 if query_stream := st.chat_input("Ask Claude to code interfaces, analyze statistics, or query the live web..."):
     active_history_logs.append({"role": "user", "content": query_stream})
+    
+    # 🌟 PLACEHOLDER FOR PREMIUM CLAUDE TEXT SHIMMER LOADING WAVE
+    with chat_column:
+        shimmer_placeholder = st.empty()
+        shimmer_placeholder.markdown("""
+        <div class="claude-shimmer-container">
+            <div class="shimmer-text">🤖 Claude is thinking...</div>
+            <div class="shimmer-line" style="width: 90%;"></div>
+            <div class="shimmer-line" style="width: 75%;"></div>
+            <div class="shimmer-line" style="width: 40%;"></div>
+        </div>
+        """, unsafe_allow_html=True)
     
     search_intelligence_brief = ""
     if web_search_enabled:
@@ -271,7 +292,6 @@ if query_stream := st.chat_input("Ask Claude to code interfaces, analyze statist
         
         ai_response_payload = response.choices.pop(0).message.content
         
-        # FIXED: Restored complete validation tags for regex isolating targets
         artifact_intercept = re.search(r'<artifact title="(.*?)">(.*?)</artifact>', ai_response_payload, re.DOTALL)
         if artifact_intercept:
             raw_extracted_code = artifact_intercept.group(2).strip()
@@ -283,6 +303,8 @@ if query_stream := st.chat_input("Ask Claude to code interfaces, analyze statist
             }
             
         active_history_logs.append({"role": "assistant", "content": ai_response_payload})
+        shimmer_placeholder.empty()
         st.rerun()
     except Exception as e:
+        shimmer_placeholder.empty()
         st.error(f"Execution tracking anomaly: {e}")
