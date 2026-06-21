@@ -17,7 +17,7 @@ with st.sidebar:
     # Model Selection Dropdown
     selected_model = st.selectbox(
         "Choose AI Model:",
-        ["llama-3.3-70b-specdec", "llama-3.1-8b-instant"],
+        ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
         index=0,
         help="Llama-3.3-70b is smarter and better for documents. Llama-3.1-8b is blazing fast."
     )
