@@ -27,7 +27,7 @@ st.markdown("""
         color: white !important;
         border-radius: 8px;
         border: none;
-    }   
+    }
     .artifact-container {
         background-color: #ffffff;
         border: 1px solid #e5e0d8;
@@ -38,8 +38,7 @@ st.markdown("""
         overflow-y: auto;
     }
 </style>
-""", unsafe_allow_html=True) # Changed from unsafe_allow_value to unsafe_allow_html
-
+""", unsafe_allow_html=True) # FIXED: Changed unsafe_allow_value to unsafe_allow_html
 
 st.title("🎨 Custom Claude Artifacts Hub")
 
@@ -163,5 +162,5 @@ with artifact_col:
             "<div class='artifact-container' style='display: flex; align-items: center; justify-content: center; color: #888;'>\n"
             "An interactive dashboard workspace opens here whenever you request design objects, code structures, or web sheets!\n"
             "</div>", 
-            unsafe_allow_value=True
+            unsafe_allow_html=True
         )
