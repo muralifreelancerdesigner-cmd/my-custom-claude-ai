@@ -7,7 +7,7 @@ import re
 st.set_page_config(
     page_title="Claude 3.5 Sonnet Ultimate", 
     page_icon="🎨", 
-    layout="wide" # Wide layout allows side-by-side chat and artifacts split screen
+    layout="wide"
 )
 
 # Anthropic Design System CSS Inject
@@ -37,9 +37,42 @@ st.markdown("""
         height: 80vh;
         overflow-y: auto;
     }
+    .login-box {
+        background-color: #ffffff;
+        padding: 40px;
+        border-radius: 12px;
+        border: 1px solid #e5e0d8;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        max-width: 400px;
+        margin: 100px auto;
+    }
 </style>
 """, unsafe_allow_html=True)
 
+# --- USER AUTHENTICATION CONTROLLER ---
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+    st.subheader("🔒 Claude Security Portal")
+    st.write("Please authenticate to access your custom AI canvas workspace.")
+    
+    username = st.text_input("Username Input:")
+    password = st.text_input("Password Input:", type="password")
+    
+    if st.button("Authenticate Login", use_container_width=True):
+        # Setting easy, default login credentials
+        if username == "admin" and password == "claude2026":
+            st.session_state.authenticated = True
+            st.success("Access Granted! Loading workspace...")
+            st.rerun()
+        else:
+            st.error("Invalid credentials entered. Please try again.")
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.stop() # Stops execution here so unauthenticated users see absolutely nothing else
+
+# --- MAIN APP INTERFACE (Runs only if logged in successfully) ---
 st.title("🎨 Custom Claude Artifacts Hub")
 
 # 2. Secure API Key Setup
@@ -49,6 +82,7 @@ client = Groq(api_key=GROQ_API_KEY)
 # 3. Sidebar Configuration
 with st.sidebar:
     st.header("⚙️ Settings")
+    st.write(f"Logged in as: **admin**")
     selected_model = st.selectbox(
         "Model Selector:",
         ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
@@ -58,6 +92,12 @@ with st.sidebar:
     st.header("📁 Context window")
     uploaded_file = st.file_uploader("Upload reference documents:", type=["pdf", "txt", "md"])
     st.markdown("---")
+    
+    # Logout action
+    if st.button("🔒 Logout Security Session", use_container_width=True):
+        st.session_state.authenticated = False
+        st.rerun()
+        
     if st.button("🧹 Clear Conversation", use_container_width=True):
         st.session_state.messages = []
         st.session_state.current_artifact = ""
@@ -103,13 +143,11 @@ chat_col, artifact_col = st.columns([1.1, 0.9])
 
 with chat_col:
     st.subheader("💬 Chat Interface")
-    # Display message threads inside the chat partition column layout
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             clean_display = re.sub(r'<artifact.*?>.*?</artifact>', '[Generated Artifact Displayed on the Right Canvas]', message["content"], flags=re.DOTALL)
             st.markdown(clean_display)
 
-    # Capturing input stream 
     if user_input := st.chat_input("Ask Claude to code a site, create data tables, or analyze documents..."):
         with st.chat_message("user"):
             st.markdown(user_input)
@@ -127,11 +165,9 @@ with chat_col:
                         temperature=0.2,
                     )
                     
-                    # Robust Choice Extraction method bypassing bracket index syntax
                     first_choice = response.choices.pop(0)
                     ai_response = first_choice.message.content
                     
-                    # Extract artifact code targets via Regex validation arrays 
                     artifact_match = re.search(r'<artifact title="(.*?)">(.*?)</artifact>', ai_response, re.DOTALL)
                     if artifact_match:
                         title = artifact_match.group(1)
@@ -153,7 +189,6 @@ with artifact_col:
         st.markdown(f"### 🚀 Component view: **{artifact['title']}**")
         
         with st.container(border=True):
-            # Check if artifact content is a renderable web build (HTML/JS/SVG)
             if any(tag in artifact['content'].lower() for tag in ["<!doctype html>", "<html>", "<svg", "<div>"]):
                 st.components.v1.html(artifact['content'], height=550, scrolling=True)
             else:
