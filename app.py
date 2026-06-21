@@ -42,8 +42,13 @@ st.markdown("""
         border-radius: 12px;
         padding: 24px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-        height: 78vh;
+        height: 70vh;
         overflow-y: auto;
+    }
+    .chat-container-scroll {
+        height: 62vh;
+        overflow-y: auto;
+        padding-right: 10px;
     }
     .login-wrapper {
         background-color: #ffffff;
@@ -150,40 +155,18 @@ CLAUDE_IDENTITY_PROMPT = """You are Claude 3.5 Sonnet, a high-fidelity intellige
 You possess advanced cognitive engineering, deep technical proficiency, and creative mastery.
 
 === CORE CAPABILITIES & EXECUTION RULES ===
-
-1. WRITTEN CONTENT & COMMUNICATION:
- - Professional Documentation: Draft professional emails, formal corporate letters, office memos, resumes, and targeted cover letters.
- - Creative Writing: Structure immersive short stories, deep poems, scripts (video/theater), song lyrics, and comprehensive novels.
- - Marketing Material: Formulate high-quality blog posts, social media captions, newsletters, ad copy, and product descriptions.
- - Content Summarization: Condense long articles, extensive books, or dense technical reports into concise bullet points or executive summaries.
-
-2. CODING & TECHNICAL DEVELOPMENT:
- - Code Generation: Write highly functional snippets or complete application scripts in Python, JavaScript, HTML/CSS, SQL, C++, and structural components.
- - Debugging: Instantly identify logical and syntax errors in existing code and provide corrected versions with clear, systematic explanations.
- - Algorithm Design: Engineer logic models for complex problem tracking, data structure implementations, and scientific mathematical systems.
- - Documentation: Compose clean README markdown files, complete inline code comments, and technical manuals for projects.
-
-3. DATA ANALYSIS & PROCESSING:
- - Data Structuring: Transform raw, unstructured conversational text maps into organized tables, JSON schemas, CSV sheets, or XML trees.
- - Mathematical Problem Solving: Solve multi-dimensional complex equations, statistical variables, and advanced logical reasoning puzzles.
- - Insights Extraction: Analyze datasets or unstructured customer feedback matrices to extract trends and actionable business intelligence.
-
-4. EDUCATIONAL & LEARNING AIDS:
- - Study Materials: Formulate smart flashcards, quiz question banks, study guides, and actionable lesson plans for educators.
- - Language Learning: Engage in fluid conversation practice, provide detailed grammar explanations, and translate text cleanly between multiple global languages.
- - Conceptual Explanations: Simplify highly abstract topics (e.g., quantum physics, philosophy, or history) into understandable maps tailored for specific age groups or skill levels.
-
-5. PROJECT PLANNING & STRATEGY:
- - Strategic Roadmaps: Develop business plans, go-to-market marketing strategies, or multi-stage project timelines.
- - Task Management: Generate structured to-do lists, daily schedules, and project milestone tracking arrays.
- - Brainstorming: Provide modern ideation loops for startup concepts, creative project themes, or innovative problem-solving approaches.
+1. WRITTEN CONTENT & COMMUNICATION: Professional documentation, essays, business letters, newsletters, or text summaries.
+2. CODING & TECHNICAL DEVELOPMENT: Full-stack scripts or visual components in Python, JavaScript, HTML/CSS, SQL, C++, tracking README files and debugging.
+3. DATA ANALYSIS & PROCESSING: Transform text data arrays into tables, clean JSON matrices, CSV, or XML dashboards.
+4. EDUCATIONAL & LEARNING AIDS: Formulate flashcards, quizzes, translations, or clear explanations of complex subjects.
+5. PROJECT PLANNING & STRATEGY: Construct startup business canvases, project roadmaps, travel schedules, or check lists.
 
 === ARTIFACT MANAGEMENT INSTRUCTIONS ===
 Whenever asked to output any code script, website layout, data object, or structured list asset, wrap the entire payload inside explicit tags:
 <artifact title="Provide Asset Title Here">
 ... your single clean execution code payload or structured text here ...
 </artifact>
-Never surround artifacts with markdown code backticks like ```html. Keep your thoughts outside tags."""
+Never surround artifacts with markdown code backticks like ```html. Place explanations outside tags."""
 
 def get_live_duck_results(query):
     try:
@@ -206,86 +189,17 @@ active_history_logs = st.session_state.chat_store[st.session_state.active_thread
 # --- 🔲 DOUBLE COLUMN SPLIT SCREEN DESIGN PATTERN ---
 chat_column, canvas_column = st.columns([1.1, 0.9])
 
+# A. Render Messages in the Chat Column Block
 with chat_column:
     st.subheader("💬 Chat Threads Console")
-    
-    for msg in active_history_logs:
-        with st.chat_message(msg["role"]):
-            display_text = re.sub(r'<artifact.*?>.*?</artifact>', '`[Premium Artifact Canvas Component Rendered on the Right Panel]`', msg["content"], flags=re.DOTALL)
-            st.markdown(display_text)
-            
-    if query_stream := st.chat_input("Ask Claude to code interfaces, analyze statistics, or query the live web..."):
-        with st.chat_message("user"):
-            st.markdown(query_stream)
-        active_history_logs.append({"role": "user", "content": query_stream})
-        
-        with st.chat_message("assistant"):
-            search_intelligence_brief = ""
-# --- 🔲 DOUBLE COLUMN SPLIT SCREEN DESIGN PATTERN ---
-chat_column, canvas_column = st.columns([1.1, 0.9])
+    # Wrap in a clean custom container block to separate from input field below
+    with st.container():
+        for msg in active_history_logs:
+            with st.chat_message(msg["role"]):
+                display_text = re.sub(r'<artifact.*?>.*?</artifact>', '`[Premium Artifact Canvas Component Rendered on the Right Panel]`', msg["content"], flags=re.DOTALL)
+                st.markdown(display_text)
 
-with chat_column:
-    st.subheader("💬 Chat Threads Console")
-    
-    # சேமிக்கப்பட்ட அரட்டை வரலாற்றைக் காண்பித்தல்
-    for msg in active_history_logs:
-        with st.chat_message(msg["role"]):
-            display_text = re.sub(r'<artifact.*?>.*?</artifact>', '`[Premium Artifact Canvas Component Rendered on the Right Panel]`', msg["content"], flags=re.DOTALL)
-            st.markdown(display_text)
-            
-    # பயனர் உள்ளீடு பெறும் பகுதி
-    if query_stream := st.chat_input("Ask Claude to code interfaces, analyze statistics, or query the live web..."):
-        with st.chat_message("user"):
-            st.markdown(query_stream)
-        active_history_logs.append({"role": "user", "content": query_stream})
-        
-        with st.chat_message("assistant"):
-            search_intelligence_brief = ""
-            if web_search_enabled:
-                with st.spinner("Connecting to live internet index nodes..."):
-                    search_intelligence_brief = get_live_duck_results(query_stream)
-                    
-            with st.spinner("Synthesizing neural model vectors..."):
-                try:
-                    runtime_system = system_prompt_payload
-                    if search_intelligence_brief:
-                        runtime_system += f"\n\n[Live Search Network Briefs]:\n{search_intelligence_brief}"
-                        
-                    api_payload_loop = [{"role": "system", "content": runtime_system}] + [
-                        {"role": m["role"], "content": m["content"]} for m in active_history_logs
-                    ]
-                    
-                    response = client.chat.completions.create(
-                        model=selected_model,
-                        messages=api_payload_loop,
-                        temperature=0.2,
-                    )
-                    
-                    ai_response_payload = response.choices.pop(0).message.content
-                    
-                    # பிரத்யேக கோடு பகுதிகளைப் பிரித்தெடுக்கும் Regex
-                    artifact_intercept = re.search(r'<artifact title="(.*?)">(.*?)</artifact>', ai_response_payload, re.DOTALL)
-                    if artifact_intercept:
-                        raw_extracted_code = artifact_intercept.group(2).strip()
-                        clean_extracted_code = re.sub(r'^```[a-zA-Z]*\n|```$', '', raw_extracted_code, flags=re.MULTILINE).strip()
-                        
-                        st.session_state.current_artifact = {
-                            "title": artifact_intercept.group(1),
-                            "content": clean_extracted_code
-                        }
-                        
-                    clean_chat_view = re.sub(r'<artifact.*?>.*?</artifact>', '`[Premium Artifact Canvas Component Rendered on the Right Panel]`', ai_response_payload, flags=re.DOTALL)
-                    st.markdown(clean_chat_view)
-                    
-                    if search_intelligence_brief:
-                        st.caption("🌐 *Information compiled using real-time search briefs from the web.*")
-                        
-                    active_history_logs.append({"role": "assistant", "content": ai_response_payload})
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Execution tracking anomaly: {e}")
-
-# --- 📦 PREMIUM INTERACTIVE COMPONENT WORKSPACE RENDER PANEL ---
+# B. Render Premium Visual Assets Canvas Panel
 with canvas_column:
     st.subheader("📦 Premium Claude Canvas")
     if st.session_state.current_artifact:
@@ -295,39 +209,21 @@ with canvas_column:
         with st.container(border=True):
             raw_content_lower = component_data['content'].lower()
             
-            # 📥 SMART EXTRAPOLATION FORMAT DETECTION SYSTEM
+            # Smart Extrapolation format parsing loops
             if any(marker in raw_content_lower for marker in ["<!doctype html>", "<html>", "<svg", "<div>"]):
-                file_ext = "html"
-                mime_type = "text/html"
-                label_text = "📥 Download Web Component (.html)"
-                is_html = True
+                file_ext, mime_type, label_text, is_html = "html", "text/html", "📥 Download Web Component (.html)", True
             elif any(marker in raw_content_lower for marker in ["import ", "def ", "print(", "streamlit"]):
-                file_ext = "py"
-                mime_type = "text/x-python"
-                label_text = "📥 Download Python Code (.py)"
-                is_html = False
+                file_ext, mime_type, label_text, is_html = "py", "text/x-python", "📥 Download Python Code (.py)", False
             elif any(marker in raw_content_lower for marker in ["const ", "let ", "document.get", "function "]) and "<html>" not in raw_content_lower:
-                file_ext = "js"
-                mime_type = "application/javascript"
-                label_text = "📥 Download JavaScript Script (.js)"
-                is_html = False
+                file_ext, mime_type, label_text, is_html = "js", "application/javascript", "📥 Download JavaScript Script (.js)", False
             elif raw_content_lower.strip().startswith("{") or raw_content_lower.strip().startswith("["):
-                file_ext = "json"
-                mime_type = "application/json"
-                label_text = "📥 Download Data Object (.json)"
-                is_html = False
+                file_ext, mime_type, label_text, is_html = "json", "application/json", "📥 Download Data Object (.json)", False
             elif any(marker in raw_content_lower for marker in ["#include", "int main", "std::"]):
-                file_ext = "cpp"
-                mime_type = "text/x-c++src"
-                label_text = "📥 Download C++ Source (.cpp)"
-                is_html = False
+                file_ext, mime_type, label_text, is_html = "cpp", "text/x-c++src", "📥 Download C++ Source (.cpp)", False
             else:
-                file_ext = "txt"
-                mime_type = "text/plain"
-                label_text = "📥 Download Document / Data Sheet (.txt)"
-                is_html = False
+                file_ext, mime_type, label_text, is_html = "txt", "text/plain", "📥 Download Document / Data Sheet (.txt)", False
             
-            # Dynamic download button executing corrected layouts
+            # FIXED: Corrected dictionary square brackets from component_data('title') to component_data['title']
             st.download_button(
                 label=label_text,
                 data=component_data['content'],
@@ -338,7 +234,7 @@ with canvas_column:
             st.markdown("<br>", unsafe_allow_html=True)
             
             if is_html:
-                st.components.v1.html(component_data['content'], height=560, scrolling=True)
+                st.components.v1.html(component_data['content'], height=520, scrolling=True)
             else:
                 st.code(component_data['content'].strip(), language="python" if file_ext == "py" else file_ext)
     else:
@@ -348,3 +244,45 @@ with canvas_column:
             "</div>", 
             unsafe_allow_html=True
         )
+
+# --- 📥 FIXED ROOT LEVEL CHAT INPUT HANDLER ---
+# FIXED: Re-aligned the chat input loops at page root block level securely with full regex parsing rules
+if query_stream := st.chat_input("Ask Claude to code interfaces, analyze statistics, or query the live web..."):
+    active_history_logs.append({"role": "user", "content": query_stream})
+    
+    search_intelligence_brief = ""
+    if web_search_enabled:
+        search_intelligence_brief = get_live_duck_results(query_stream)
+        
+    try:
+        runtime_system = system_prompt_payload
+        if search_intelligence_brief:
+            runtime_system += f"\n\n[Live Search Network Briefs]:\n{search_intelligence_brief}"
+            
+        api_payload_loop = [{"role": "system", "content": runtime_system}] + [
+            {"role": m["role"], "content": m["content"]} for m in active_history_logs
+        ]
+        
+        response = client.chat.completions.create(
+            model=selected_model,
+            messages=api_payload_loop,
+            temperature=0.2,
+        )
+        
+        ai_response_payload = response.choices.pop(0).message.content
+        
+        # FIXED: Restored complete validation tags for regex isolating targets
+        artifact_intercept = re.search(r'<artifact title="(.*?)">(.*?)</artifact>', ai_response_payload, re.DOTALL)
+        if artifact_intercept:
+            raw_extracted_code = artifact_intercept.group(2).strip()
+            clean_extracted_code = re.sub(r'^```[a-zA-Z]*\n|```$', '', raw_extracted_code, flags=re.MULTILINE).strip()
+            
+            st.session_state.current_artifact = {
+                "title": artifact_intercept.group(1),
+                "content": clean_extracted_code
+            }
+            
+        active_history_logs.append({"role": "assistant", "content": ai_response_payload})
+        st.rerun()
+    except Exception as e:
+        st.error(f"Execution tracking anomaly: {e}")
