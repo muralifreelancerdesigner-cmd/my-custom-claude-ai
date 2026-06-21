@@ -276,23 +276,28 @@ with canvas_column:
         with st.container(border=True):
             raw_content_lower = component_data['content'].lower()
             
-            # 📥 நேரடி டவுன்லோட் பட்டன் வசதி (சரியான இண்டெண்டேஷனில் உள்ளது)
+            # 💡 ஸ்மார்ட் கோப்பு வடிவம் கண்டறிதல் (HTML அல்லாத கோப்புகளுக்கு .py / .txt என மாற்றுகிறது)
+            is_html = any(marker in raw_content_lower for marker in ["<!doctype html>", "<html>", "<svg", "<div>", "🎨"])
+            file_ext = "html" if is_html else "py"
+            mime_type = "text/html" if is_html else "text/x-python"
+            label_text = "📥 Download Web App (.html)" if is_html else "📥 Download Python Agent Code (.py)"
+            
+            # 📥 மேம்படுத்தப்பட்ட டைனமிக் டவுன்லோட் பட்டன்
             st.download_button(
-                label="📥 Download This App File (.html)",
+                label=label_text,
                 data=component_data['content'],
-                file_name=f"{component_data['title'].lower().replace(' ', '_')}.html",
-                mime="text/html",
+                file_name=f"{component_data['title'].lower().replace(' ', '_')}.{file_ext}",
+                mime=mime_type,
                 use_container_width=True
             )
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # கோடு அல்லது லைவ் ஆப் காட்டும் பகுதி
-            if any(marker in raw_content_lower for marker in ["<!doctype html>", "<html>", "<svg", "<div>", "🎨"]):
+            # திரையில் காட்டும் பகுதி
+            if is_html:
                 st.components.v1.html(component_data['content'], height=560, scrolling=True)
             else:
-                st.code(component_data['content'].strip())
+                st.code(component_data['content'].strip(), language="python")
     else:
-        # எந்த ஒரு ஆப்பும் ரன் ஆகாத போது காட்டும் வெற்று விண்டோ
         st.markdown(
             "<div class='artifact-card' style='display: flex; align-items: center; justify-content: center; color: #8a817c; font-style: italic; text-align: center;'>\n"
             "Claude's interactive workspace screen canvas activates here.<br>Whenever you ask for complex web scripts, user applications, charts, or HTML frameworks, they render live instantly in this workspace panel!\n"
