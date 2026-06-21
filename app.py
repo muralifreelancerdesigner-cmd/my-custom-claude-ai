@@ -2,6 +2,8 @@ import streamlit as st
 from groq import Groq
 from pypdf import PdfReader
 import re
+import urllib.parse
+import json
 
 # 1. Premium Claude Styling & Layout Configuration
 st.set_page_config(
@@ -62,7 +64,6 @@ if not st.session_state.authenticated:
     password = st.text_input("Password Input:", type="password")
     
     if st.button("Authenticate Login", use_container_width=True):
-        # Setting easy, default login credentials
         if username == "admin" and password == "claude2026":
             st.session_state.authenticated = True
             st.success("Access Granted! Loading workspace...")
@@ -70,7 +71,7 @@ if not st.session_state.authenticated:
         else:
             st.error("Invalid credentials entered. Please try again.")
     st.markdown("</div>", unsafe_allow_html=True)
-    st.stop() # Stops execution here so unauthenticated users see absolutely nothing else
+    st.stop()
 
 # --- MAIN APP INTERFACE (Runs only if logged in successfully) ---
 st.title("🎨 Custom Claude Artifacts Hub")
@@ -88,12 +89,15 @@ with st.sidebar:
         ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
         index=0
     )
+    
+    # NEW FEATURE: Live Web Search Toggle Switch
+    web_search_enabled = st.checkbox("🌐 Enable Live Web Search", value=False, help="Allows the AI to browse the internet for up-to-date information before responding.")
+    
     st.markdown("---")
     st.header("📁 Context window")
     uploaded_file = st.file_uploader("Upload reference documents:", type=["pdf", "txt", "md"])
     st.markdown("---")
     
-    # Logout action
     if st.button("🔒 Logout Security Session", use_container_width=True):
         st.session_state.authenticated = False
         st.rerun()
@@ -131,6 +135,24 @@ When asked to build scripts, apps, code blocks, HTML, charts, SVGs, or component
 </artifact>
 Ensure everything inside tags is clean, functional, and self-contained."""
 
+# Helper Function: Quick HTML web search tool to scrape recent search briefs instantly
+def perform_live_web_search(query):
+    try:
+        encoded_query = urllib.parse.quote(query)
+        # Using DuckDuckGo's lite HTML endpoint via native python requests framework safely
+        import urllib.request
+        url = f"https://duckduckgo.com{encoded_query}"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        html = urllib.request.urlopen(req).read().decode('utf-8')
+        
+        # Clean text tokens from raw HTML snippet data arrays
+        snippets = re.findall(r'<a class="result__snippet".*?>(.*?)</a>', html, re.DOTALL)[:4]
+        search_results = "\n".join([re.sub(r'<.*?>', '', s) for s in snippets])
+        return search_results if search_results else "No live search results found."
+    except Exception:
+        return "Failed to fetch live internet results."
+
+# Core instruction layout preparation
 if file_context:
     system_content = f"{ARTIFACT_PROMPT}\n\nDocument Reference Context:\n{file_context}"
 else:
@@ -148,17 +170,29 @@ with chat_col:
             clean_display = re.sub(r'<artifact.*?>.*?</artifact>', '[Generated Artifact Displayed on the Right Canvas]', message["content"], flags=re.DOTALL)
             st.markdown(clean_display)
 
-    if user_input := st.chat_input("Ask Claude to code a site, create data tables, or analyze documents..."):
+    if user_input := st.chat_input("Ask Claude to code a site, browse recent news, or analyze documents..."):
         with st.chat_message("user"):
             st.markdown(user_input)
         st.session_state.messages.append({"role": "user", "content": user_input})
 
         with st.chat_message("assistant"):
+            # Triggering live background web engines if selected by user toggle settings
+            search_data = ""
+            if web_search_enabled:
+                with st.spinner("Browsing the live internet for recent news..."):
+                    search_data = perform_live_web_search(user_input)
+            
             with st.spinner("Synthesizing context stream..."):
                 try:
-                    api_messages = [CLAUDE_SYSTEM_PROMPT] + [
+                    # Append search context to system payload instructions if active
+                    active_system_content = system_content
+                    if search_data:
+                        active_system_content += f"\n\n[LIVE SEARCH RESULTS INJECTED FROM INTERNET]:\n{search_data}\n\nAnswer the user using this real-time background search knowledge."
+                    
+                    api_messages = [{"role": "system", "content": active_system_content}] + [
                         {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
                     ]
+                    
                     response = client.chat.completions.create(
                         model=selected_model,
                         messages=api_messages,
@@ -176,6 +210,8 @@ with chat_col:
                     
                     clean_display = re.sub(r'<artifact.*?>.*?</artifact>', '[Artifact generated successfully on the canvas panel]', ai_response, flags=re.DOTALL)
                     st.markdown(clean_display)
+                    if search_data:
+                        st.caption("🌐 *Information compiled using real-time search briefs from the web.*")
                     st.session_state.messages.append({"role": "assistant", "content": ai_response})
                     st.rerun() 
                 except Exception as e:
@@ -196,7 +232,7 @@ with artifact_col:
     else:
         st.markdown(
             "<div class='artifact-container' style='display: flex; align-items: center; justify-content: center; color: #888;'>\n"
-            "An interactive dashboard workspace opens here whenever you request design objects, code structures, or web sheets!\n"
-            "</div>", 
+"An interactive dashboard workspace opens here whenever you request design objects, code structures, or web sheets!\n"
+            "",
             unsafe_allow_html=True
         )
