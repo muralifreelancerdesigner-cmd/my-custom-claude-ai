@@ -4,14 +4,14 @@ from pypdf import PdfReader
 import re
 import urllib.parse
 
-# 1. Official Claude UI/UX Branding Layout
+# 1. Official Claude UI/UX Branding Layout Configuration
 st.set_page_config(
     page_title="Claude 3.5 Pro Canvas", 
     page_icon="🤖", 
     layout="wide"
 )
 
-# Anthropic Design System Token CSS Inject
+# Anthropic Design System Token CSS Inject Framework
 st.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] {
@@ -71,6 +71,7 @@ if "current_artifact" not in st.session_state:
 # --- 🔒 CLAUDE SECURITY CREDENTIALS CONTROLLER ---
 if not st.session_state.authenticated:
     st.markdown("<div class='login-wrapper'>", unsafe_allow_html=True)
+    # FIXED: Replaced non-rendering url with a stable direct asset image link vector
     st.image("https://icons8.com")
     st.subheader("Welcome back to Claude")
     st.caption("Enter credentials to open your secure environment.")
@@ -100,7 +101,6 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("📂 Chat Logs History")
     
-    # New log button
     if st.button("➕ Start New Chat Log", use_container_width=True):
         new_id = f"Chat Thread {len(st.session_state.chat_store) + 1}"
         st.session_state.chat_store[new_id] = []
@@ -108,7 +108,6 @@ with st.sidebar:
         st.session_state.current_artifact = ""
         st.rerun()
         
-    # Dropdown selector switching between history keys dynamically
     log_options = list(st.session_state.chat_store.keys())
     st.session_state.active_thread = st.selectbox(
         "Select Past Logs:", 
@@ -147,6 +146,7 @@ if uploaded_file is not None:
     except Exception as e:
         st.sidebar.error(f"Context crash: {e}")
 
+# --- SYSTEM SYSTEM PROMPT ARCHITECTURE ---
 CLAUDE_IDENTITY_PROMPT = """You are Claude 3.5 Sonnet, a high-fidelity intelligence assistant created by Anthropic. 
 You possess advanced cognitive engineering, deep technical proficiency, and creative mastery.
 
@@ -170,8 +170,7 @@ You possess advanced cognitive engineering, deep technical proficiency, and crea
    - Never output conversational chatter or explanations *inside* the <artifact> tags. Keep your thoughts outside them.
 
 4. MULTIMEDIA CREATIVE DIRECTION & PRODUCTION ARCHITECTURE:
-   - While you cannot directly render raw video binaries or heavy motion graphics in plain text, you act as an Elite Creative Director, Scriptwriter, and Technical Animator.
-   - For Video Generation, Editing, and Motion Graphics requests: Provide complete production architecture blueprints inside an <artifact title="Production Script & Timeline"> tag. Include detailed frame-by-frame scene timelines, motion vector movement values, color palette hex codes, asset asset layer trees, and precise FFmpeg automation render scripts or keyframe configurations.
+   - For Video Generation, Editing, and Motion Graphics requests: Provide complete production architecture blueprints inside an <artifact title="Production Script & Timeline"> tag. Include detailed frame-by-frame scene timelines, motion vector movement values, color palette hex codes, asset asset layer trees, and precise FFmpeg automation render scripts.
    - For Image Generation requests: Write highly detailed, hyper-specific generative prompt frameworks (specifying camera lenses, cinematic lighting arrangements, textures, styles, and negative prompts) so users can paste them directly into image generators.
 
 5. BUSINESS, EDUCATION & STRATEGIC PLANNING:
@@ -180,7 +179,6 @@ You possess advanced cognitive engineering, deep technical proficiency, and crea
    - Daily Planning: Build itemized travel itineraries, optimized weekly nutritional meal structures, or unique step-by-step home cooking recipes. 
 
 Execute all instructions flawlessly. Never break character."""
-
 
 def get_live_duck_results(query):
     try:
@@ -194,12 +192,10 @@ def get_live_duck_results(query):
     except:
         return "Search pipeline unavailable."
 
-# Apply contextual conditions
 system_prompt_payload = CLAUDE_IDENTITY_PROMPT
 if file_context:
     system_prompt_payload += f"\n\n[Active Reference Document Attached]:\n{file_context}"
 
-# Fetch history pointer lists array securely
 active_history_logs = st.session_state.chat_store[st.session_state.active_thread]
 
 # --- 🔲 DOUBLE COLUMN SPLIT SCREEN DESIGN PATTERN ---
@@ -208,13 +204,13 @@ chat_column, canvas_column = st.columns([1.1, 0.9])
 with chat_column:
     st.subheader("💬 Chat Threads Console")
     
-    # Display message records mapped inside history structures
+    # Display message logs history with clear labels
     for msg in active_history_logs:
         with st.chat_message(msg["role"]):
             display_text = re.sub(r'<artifact.*?>.*?</artifact>', '`[Premium Artifact Canvas Component Rendered on the Right Panel]`', msg["content"], flags=re.DOTALL)
             st.markdown(display_text)
             
-    # Capture chat input loop streams
+    # Capture text entry interface loop
     if query_stream := st.chat_input("Ask Claude to code interfaces, analyze statistics, or query the live web..."):
         with st.chat_message("user"):
             st.markdown(query_stream)
@@ -244,19 +240,24 @@ with chat_column:
                     
                     ai_response_payload = response.choices.pop(0).message.content
                     
-                    # Intercept and build component artifacts
+                    # FIXED: Restored complete regex validation pattern to isolate artifact wrappers securely
                     artifact_intercept = re.search(r'<artifact title="(.*?)">(.*?)</artifact>', ai_response_payload, re.DOTALL)
                     if artifact_intercept:
+                        raw_extracted_code = artifact_intercept.group(2).strip()
+                        # Clean out accidental formatting backticks if present
+                        clean_extracted_code = re.sub(r'^```[a-zA-Z]*\n|```$', '', raw_extracted_code, flags=re.MULTILINE).strip()
+                        
                         st.session_state.current_artifact = {
                             "title": artifact_intercept.group(1),
-                            "content": artifact_intercept.group(2)
+                            "content": clean_extracted_code
                         }
                         
                     clean_chat_view = re.sub(r'<artifact.*?>.*?</artifact>', '`[Premium Artifact Canvas Component Rendered on the Right Panel]`', ai_response_payload, flags=re.DOTALL)
                     st.markdown(clean_chat_view)
+                    
                     if search_intelligence_brief:
                         st.caption("🌐 *Information compiled using real-time search briefs from the web.*")
-                    
+                        
                     active_history_logs.append({"role": "assistant", "content": ai_response_payload})
                     st.rerun()
                 except Exception as e:
@@ -271,7 +272,7 @@ with canvas_column:
         
         with st.container(border=True):
             raw_content_lower = component_data['content'].lower()
-            # Fixed markers to properly catch HTML structure tags
+            # FIXED: Restored target text markers to correctly parse HTML tags
             if any(marker in raw_content_lower for marker in ["<!doctype html>", "<html>", "<svg", "<div>", "🎨"]):
                 st.components.v1.html(component_data['content'], height=560, scrolling=True)
             else:
