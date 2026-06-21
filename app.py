@@ -122,12 +122,16 @@ with chat_col:
                     api_messages = [CLAUDE_SYSTEM_PROMPT] + [
                         {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
                     ]
+                    # Call Groq API with updated model structure
                     response = client.chat.completions.create(
                         model=selected_model,
                         messages=api_messages,
                         temperature=0.2,
                     )
-                    ai_response = response.choices.message.content
+                    
+                    # FIXED: Added [0] to correctly read the first choice from the list
+                    ai_response = response.choices[0].message.content
+
                     
                     # Extract artifact code targets via Regex validation arrays 
                     artifact_match = re.search(r'<artifact title="(.*?)">(.*?)</artifact>', ai_response, re.DOTALL)
