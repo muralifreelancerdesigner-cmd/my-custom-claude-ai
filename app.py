@@ -145,48 +145,50 @@ if uploaded_file is not None:
     except Exception as e:
         st.sidebar.error(f"Context crash: {e}")
 
-# --- SYSTEM SYSTEM PROMPT ARCHITECTURE ---
+# --- SYSTEM SYSTEM PROMPT ARCHITECTURE WITH UPDATED FEATURES ---
 CLAUDE_IDENTITY_PROMPT = """You are Claude 3.5 Sonnet, a high-fidelity intelligence assistant created by Anthropic. 
 You possess advanced cognitive engineering, deep technical proficiency, and creative mastery.
 
 === CORE CAPABILITIES & EXECUTION RULES ===
 
-1. ADVANCED CONTENT CREATION & COPYWRITING:
- - Corporate Communication: Draft professional business emails, structured leaves, and high-empathy responses to customer disputes or compliance complaints.
- - Production Writing: Generate complete, structured, SEO-friendly research articles, essays, and targeted blog posts with keyword tracking.
- - Creative Literary Production: Construct immersive short stories, structured screenplay dialogues, and nuanced poetry using rich narrative imagination.
+1. WRITTEN CONTENT & COMMUNICATION:
+ - Professional Documentation: Draft professional emails, formal corporate letters, office memos, resumes, and targeted cover letters.
+ - Creative Writing: Structure immersive short stories, deep poems, scripts (video/theater), song lyrics, and comprehensive novels.
+ - Marketing Material: Formulate high-quality blog posts, social media captions, newsletters, ad copy, and product descriptions.
+ - Content Summarization: Condense long articles, extensive books, or dense technical reports into concise bullet points or executive summaries.
 
-2. FULL-STACK DEVELOPMENT & TECHNICAL UTILITY OPERATIONS:
- - Software Engineering: Write production-grade, self-contained scripts and components in Python, JavaScript, HTML, CSS, React, and SQL.
- - Systems Debugging: Execute trace analysis on incoming code snippets. Identify system faults, explain logical failures, and provide optimized code fixes.
- - File Data Conversions: Transform unstructured datasets across abstract object notations (e.g., converting deep JSON matrices into tabular CSV formats).
- - Artifact Compilation: Whenever asked to build working web scripts, single-page user applications, visual charts, custom vector SVGs, or sheets, you MUST pack the entire code into explicit tags:
- <artifact title="Provide Asset Title Here">
- ... your single self-contained, clean execution code payload here ...
- </artifact>
- - Never output markdown backticks like ```html inside or surrounding the <artifact> elements. Place explanations outside tags.
+2. CODING & TECHNICAL DEVELOPMENT:
+ - Code Generation: Write highly functional snippets or complete application scripts in Python, JavaScript, HTML/CSS, SQL, C++, and structural components.
+ - Debugging: Instantly identify logical and syntax errors in existing code and provide corrected versions with clear, systematic explanations.
+ - Algorithm Design: Engineer logic models for complex problem tracking, data structure implementations, and scientific mathematical systems.
+ - Documentation: Compose clean README markdown files, complete inline code comments, and technical manuals for projects.
 
-3. ACADEMIC LEARNING, ANALYSIS & CONVERSATIONAL LINGUISTICS:
- - Automated Summary Systems: Parse massive uploaded document context maps (PDF, TXT, MD), extracting key architectural points and technical outlines within seconds.
- - Gamified Assessments: Formulate itemized quiz matrices, multiple-choice tracking arrays, and rigorous mock test scenarios based on context windows.
- - Adaptive Localization: Provide precise, fluid conversational training loops across global languages. Maintain structural grammar validation and native vocabulary optimizations.
+3. DATA ANALYSIS & PROCESSING:
+ - Data Structuring: Transform raw, unstructured conversational text maps into organized tables, JSON schemas, CSV sheets, or XML trees.
+ - Mathematical Problem Solving: Solve multi-dimensional complex equations, statistical variables, and advanced logical reasoning puzzles.
+ - Insights Extraction: Analyze datasets or unstructured customer feedback matrices to extract trends and actionable business intelligence.
 
-4. LOGISTICS, STRATEGIC PLANNING & ANALYSIS PATTERNS:
- - Data Tabulation: Process complex multi-dimensional information blocks and display them in clean Markdown tables.
- - Operational Scheduling: Architect optimized timeline frameworks, detailed multi-destination travel itineraries, weekly meal nutrition schemes, and interactive daily task schedules.
- - Objective Decision Frameworks: Construct thorough pros-and-cons trade-off matrices to assist users in making informed strategic decisions.
+4. EDUCATIONAL & LEARNING AIDS:
+ - Study Materials: Formulate smart flashcards, quiz question banks, study guides, and actionable lesson plans for educators.
+ - Language Learning: Engage in fluid conversation practice, provide detailed grammar explanations, and translate text cleanly between multiple global languages.
+ - Conceptual Explanations: Simplify highly abstract topics (e.g., quantum physics, philosophy, or history) into understandable maps tailored for specific age groups or skill levels.
 
-5. BUSINESS VISION ARCHITECTURE & CREATIVE IDEATION:
- - Venture Development: Formulate end-to-end commercial business plan canvases, startup financial paths, and modern multi-channel marketing ideas.
- - Branding Mechanics: Engine highly viral YouTube title frameworks, unique brand/corporate naming conventions, and memorable product slogans.
+5. PROJECT PLANNING & STRATEGY:
+ - Strategic Roadmaps: Develop business plans, go-to-market marketing strategies, or multi-stage project timelines.
+ - Task Management: Generate structured to-do lists, daily schedules, and project milestone tracking arrays.
+ - Brainstorming: Provide modern ideation loops for startup concepts, creative project themes, or innovative problem-solving approaches.
 
-Execute all instructions flawlessly. Never break character."""
+=== ARTIFACT MANAGEMENT INSTRUCTIONS ===
+Whenever asked to output any code script, website layout, data object, or structured list asset, wrap the entire payload inside explicit tags:
+<artifact title="Provide Asset Title Here">
+... your single clean execution code payload or structured text here ...
+</artifact>
+Never surround artifacts with markdown code backticks like ```html. Keep your thoughts outside tags."""
 
 def get_live_duck_results(query):
     try:
         encoded = urllib.parse.quote(query)
         import urllib.request
-        # FIXED: Corrected URL architecture pattern for the direct web search pipeline
         url = f"https://duckduckgo.com{encoded}"
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
         html = urllib.request.urlopen(req).read().decode('utf-8')
@@ -201,6 +203,24 @@ if file_context:
 
 active_history_logs = st.session_state.chat_store[st.session_state.active_thread]
 
+# --- 🔲 DOUBLE COLUMN SPLIT SCREEN DESIGN PATTERN ---
+chat_column, canvas_column = st.columns([1.1, 0.9])
+
+with chat_column:
+    st.subheader("💬 Chat Threads Console")
+    
+    for msg in active_history_logs:
+        with st.chat_message(msg["role"]):
+            display_text = re.sub(r'<artifact.*?>.*?</artifact>', '`[Premium Artifact Canvas Component Rendered on the Right Panel]`', msg["content"], flags=re.DOTALL)
+            st.markdown(display_text)
+            
+    if query_stream := st.chat_input("Ask Claude to code interfaces, analyze statistics, or query the live web..."):
+        with st.chat_message("user"):
+            st.markdown(query_stream)
+        active_history_logs.append({"role": "user", "content": query_stream})
+        
+        with st.chat_message("assistant"):
+            search_intelligence_brief = ""
 # --- 🔲 DOUBLE COLUMN SPLIT SCREEN DESIGN PATTERN ---
 chat_column, canvas_column = st.columns([1.1, 0.9])
 
@@ -275,12 +295,39 @@ with canvas_column:
         with st.container(border=True):
             raw_content_lower = component_data['content'].lower()
             
-            # FIXED: HTML டேக்குகள் மற்றும் இண்டெண்டேஷன் பிழைகள் முழுமையாகச் சரிசெய்யப்பட்டுள்ளன
-            is_html = any(marker in raw_content_lower for marker in ["<!doctype html>", "<html>", "<svg", "<div>", "🎨"])
-            file_ext = "html" if is_html else "py"
-            mime_type = "text/html" if is_html else "text/x-python"
-            label_text = "📥 Download Web App (.html)" if is_html else "📥 Download Python Agent Code (.py)"
+            # 📥 SMART EXTRAPOLATION FORMAT DETECTION SYSTEM
+            if any(marker in raw_content_lower for marker in ["<!doctype html>", "<html>", "<svg", "<div>"]):
+                file_ext = "html"
+                mime_type = "text/html"
+                label_text = "📥 Download Web Component (.html)"
+                is_html = True
+            elif any(marker in raw_content_lower for marker in ["import ", "def ", "print(", "streamlit"]):
+                file_ext = "py"
+                mime_type = "text/x-python"
+                label_text = "📥 Download Python Code (.py)"
+                is_html = False
+            elif any(marker in raw_content_lower for marker in ["const ", "let ", "document.get", "function "]) and "<html>" not in raw_content_lower:
+                file_ext = "js"
+                mime_type = "application/javascript"
+                label_text = "📥 Download JavaScript Script (.js)"
+                is_html = False
+            elif raw_content_lower.strip().startswith("{") or raw_content_lower.strip().startswith("["):
+                file_ext = "json"
+                mime_type = "application/json"
+                label_text = "📥 Download Data Object (.json)"
+                is_html = False
+            elif any(marker in raw_content_lower for marker in ["#include", "int main", "std::"]):
+                file_ext = "cpp"
+                mime_type = "text/x-c++src"
+                label_text = "📥 Download C++ Source (.cpp)"
+                is_html = False
+            else:
+                file_ext = "txt"
+                mime_type = "text/plain"
+                label_text = "📥 Download Document / Data Sheet (.txt)"
+                is_html = False
             
+            # Dynamic download button executing corrected layouts
             st.download_button(
                 label=label_text,
                 data=component_data['content'],
@@ -293,7 +340,7 @@ with canvas_column:
             if is_html:
                 st.components.v1.html(component_data['content'], height=560, scrolling=True)
             else:
-                st.code(component_data['content'].strip(), language="python")
+                st.code(component_data['content'].strip(), language="python" if file_ext == "py" else file_ext)
     else:
         st.markdown(
             "<div class='artifact-card' style='display: flex; align-items: center; justify-content: center; color: #8a817c; font-style: italic; text-align: center;'>\n"
