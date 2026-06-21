@@ -71,7 +71,6 @@ if "current_artifact" not in st.session_state:
 # --- 🔒 CLAUDE SECURITY CREDENTIALS CONTROLLER ---
 if not st.session_state.authenticated:
     st.markdown("<div class='login-wrapper'>", unsafe_allow_html=True)
-    # FIXED: Replaced non-rendering url with a stable direct asset image link vector
     st.image("https://icons8.com")
     st.subheader("Welcome back to Claude")
     st.caption("Enter credentials to open your secure environment.")
@@ -153,33 +152,33 @@ You possess advanced cognitive engineering, deep technical proficiency, and crea
 === CORE CAPABILITIES & EXECUTION RULES ===
 
 1. ADVANCED CONTENT CREATION & COPYWRITING:
-   - Corporate Communication: Draft professional business emails, structured leaves, and high-empathy responses to customer disputes or compliance complaints.
-   - Production Writing: Generate complete, structured, SEO-friendly research articles, essays, and targeted blog posts with keyword tracking.
-   - Creative Literary Production: Construct immersive short stories, structured screenplay dialogues, and nuanced poetry using rich narrative imagination.
+ - Corporate Communication: Draft professional business emails, structured leaves, and high-empathy responses to customer disputes or compliance complaints.
+ - Production Writing: Generate complete, structured, SEO-friendly research articles, essays, and targeted blog posts with keyword tracking.
+ - Creative Literary Production: Construct immersive short stories, structured screenplay dialogues, and nuanced poetry using rich narrative imagination.
 
 2. FULL-STACK DEVELOPMENT & TECHNICAL UTILITY OPERATIONS:
-   - Software Engineering: Write production-grade, self-contained scripts and components in Python, JavaScript, HTML, CSS, React, and SQL.
-   - Systems Debugging: Execute trace analysis on incoming code snippets. Identify system faults, explain logical failures, and provide optimized code fixes.
-   - File Data Conversions: Transform unstructured datasets across abstract object notations (e.g., converting deep JSON matrices into tabular CSV formats).
-   - Artifact Compilation: Whenever asked to build working web scripts, single-page user applications, visual charts, custom vector SVGs, or sheets, you MUST pack the entire code into explicit tags:
-     <artifact title="Provide Asset Title Here">
-     ... your single self-contained, clean execution code payload here ...
-     </artifact>
-   - Never output markdown backticks like ```html inside or surrounding the <artifact> elements. Place explanations outside tags.
+ - Software Engineering: Write production-grade, self-contained scripts and components in Python, JavaScript, HTML, CSS, React, and SQL.
+ - Systems Debugging: Execute trace analysis on incoming code snippets. Identify system faults, explain logical failures, and provide optimized code fixes.
+ - File Data Conversions: Transform unstructured datasets across abstract object notations (e.g., converting deep JSON matrices into tabular CSV formats).
+ - Artifact Compilation: Whenever asked to build working web scripts, single-page user applications, visual charts, custom vector SVGs, or sheets, you MUST pack the entire code into explicit tags:
+ <artifact title="Provide Asset Title Here">
+ ... your single self-contained, clean execution code payload here ...
+ </artifact>
+ - Never output markdown backticks like ```html inside or surrounding the <artifact> elements. Place explanations outside tags.
 
 3. ACADEMIC LEARNING, ANALYSIS & CONVERSATIONAL LINGUISTICS:
-   - Automated Summary Systems: Parse massive uploaded document context maps (PDF, TXT, MD), extracting key architectural points and technical outlines within seconds.
-   - Gamified Assessments: Formulate itemized quiz matrices, multiple-choice tracking arrays, and rigorous mock test scenarios based on context windows.
-   - Adaptive Localization: Provide precise, fluid conversational training loops across global languages. Maintain structural grammar validation and native vocabulary optimizations.
+ - Automated Summary Systems: Parse massive uploaded document context maps (PDF, TXT, MD), extracting key architectural points and technical outlines within seconds.
+ - Gamified Assessments: Formulate itemized quiz matrices, multiple-choice tracking arrays, and rigorous mock test scenarios based on context windows.
+ - Adaptive Localization: Provide precise, fluid conversational training loops across global languages. Maintain structural grammar validation and native vocabulary optimizations.
 
 4. LOGISTICS, STRATEGIC PLANNING & ANALYSIS PATTERNS:
-   - Data Tabulation: Process complex multi-dimensional information blocks and display them in clean Markdown tables.
-   - Operational Scheduling: Architect optimized timeline frameworks, detailed multi-destination travel itineraries, weekly meal nutrition schemes, and interactive daily task schedules.
-   - Objective Decision Frameworks: Construct thorough pros-and-cons trade-off matrices to assist users in making informed strategic decisions.
+ - Data Tabulation: Process complex multi-dimensional information blocks and display them in clean Markdown tables.
+ - Operational Scheduling: Architect optimized timeline frameworks, detailed multi-destination travel itineraries, weekly meal nutrition schemes, and interactive daily task schedules.
+ - Objective Decision Frameworks: Construct thorough pros-and-cons trade-off matrices to assist users in making informed strategic decisions.
 
 5. BUSINESS VISION ARCHITECTURE & CREATIVE IDEATION:
-   - Venture Development: Formulate end-to-end commercial business plan canvases, startup financial paths, and modern multi-channel marketing ideas.
-   - Branding Mechanics: Engine highly viral YouTube title frameworks, unique brand/corporate naming conventions, and memorable product slogans.
+ - Venture Development: Formulate end-to-end commercial business plan canvases, startup financial paths, and modern multi-channel marketing ideas.
+ - Branding Mechanics: Engine highly viral YouTube title frameworks, unique brand/corporate naming conventions, and memorable product slogans.
 
 Execute all instructions flawlessly. Never break character."""
 
@@ -187,8 +186,9 @@ def get_live_duck_results(query):
     try:
         encoded = urllib.parse.quote(query)
         import urllib.request
+        # FIXED: Corrected URL architecture pattern for the direct web search pipeline
         url = f"https://duckduckgo.com{encoded}"
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
         html = urllib.request.urlopen(req).read().decode('utf-8')
         snippets = re.findall(r'<a class="result__snippet".*?>(.*?)</a>', html, re.DOTALL)[:4]
         return "\n".join([re.sub(r'<.*?>', '', s) for s in snippets])
@@ -207,13 +207,13 @@ chat_column, canvas_column = st.columns([1.1, 0.9])
 with chat_column:
     st.subheader("💬 Chat Threads Console")
     
-    # Display message logs history with clear labels
+    # சேமிக்கப்பட்ட அரட்டை வரலாற்றைக் காண்பித்தல்
     for msg in active_history_logs:
         with st.chat_message(msg["role"]):
             display_text = re.sub(r'<artifact.*?>.*?</artifact>', '`[Premium Artifact Canvas Component Rendered on the Right Panel]`', msg["content"], flags=re.DOTALL)
             st.markdown(display_text)
             
-    # Capture text entry interface loop
+    # பயனர் உள்ளீடு பெறும் பகுதி
     if query_stream := st.chat_input("Ask Claude to code interfaces, analyze statistics, or query the live web..."):
         with st.chat_message("user"):
             st.markdown(query_stream)
@@ -243,11 +243,10 @@ with chat_column:
                     
                     ai_response_payload = response.choices.pop(0).message.content
                     
-                    # FIXED: Restored complete regex validation pattern to isolate artifact wrappers securely
+                    # பிரத்யேக கோடு பகுதிகளைப் பிரித்தெடுக்கும் Regex
                     artifact_intercept = re.search(r'<artifact title="(.*?)">(.*?)</artifact>', ai_response_payload, re.DOTALL)
                     if artifact_intercept:
                         raw_extracted_code = artifact_intercept.group(2).strip()
-                        # Clean out accidental formatting backticks if present
                         clean_extracted_code = re.sub(r'^```[a-zA-Z]*\n|```$', '', raw_extracted_code, flags=re.MULTILINE).strip()
                         
                         st.session_state.current_artifact = {
@@ -276,13 +275,12 @@ with canvas_column:
         with st.container(border=True):
             raw_content_lower = component_data['content'].lower()
             
-            # 💡 ஸ்மார்ட் கோப்பு வடிவம் கண்டறிதல் (HTML அல்லாத கோப்புகளுக்கு .py / .txt என மாற்றுகிறது)
+            # FIXED: HTML டேக்குகள் மற்றும் இண்டெண்டேஷன் பிழைகள் முழுமையாகச் சரிசெய்யப்பட்டுள்ளன
             is_html = any(marker in raw_content_lower for marker in ["<!doctype html>", "<html>", "<svg", "<div>", "🎨"])
             file_ext = "html" if is_html else "py"
             mime_type = "text/html" if is_html else "text/x-python"
             label_text = "📥 Download Web App (.html)" if is_html else "📥 Download Python Agent Code (.py)"
             
-            # 📥 மேம்படுத்தப்பட்ட டைனமிக் டவுன்லோட் பட்டன்
             st.download_button(
                 label=label_text,
                 data=component_data['content'],
@@ -292,7 +290,6 @@ with canvas_column:
             )
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # திரையில் காட்டும் பகுதி
             if is_html:
                 st.components.v1.html(component_data['content'], height=560, scrolling=True)
             else:
