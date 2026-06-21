@@ -27,7 +27,7 @@ st.markdown("""
         color: white !important;
         border-radius: 8px;
         border: none;
-    }
+    }   
     .artifact-container {
         background-color: #ffffff;
         border: 1px solid #e5e0d8;
@@ -38,7 +38,8 @@ st.markdown("""
         overflow-y: auto;
     }
 </style>
-""", unsafe_allow_value=True)
+""", unsafe_allow_html=True) # Changed from unsafe_allow_value to unsafe_allow_html
+
 
 st.title("🎨 Custom Claude Artifacts Hub")
 
